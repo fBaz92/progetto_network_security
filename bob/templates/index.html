@@ -12,7 +12,32 @@
         socket.on("new_message", (data) => {
           const messagesDiv = document.getElementById("messages");
           const newMessage = document.createElement("div");
-          newMessage.innerHTML = `Received Message: ${data.message} <br> Encrypted Message: ${data.encrypted_message} <br> <span style="color: gray;">${data.timestamp}</span>`;
+          newMessage.innerHTML = `
+                    <div><span style="color: blue;">${
+                      data.sender
+                    }</span> to <span style="color: green;">${
+            data.receiver
+          }</span> at <span style="color: gray;">${
+            data.recv_timestamp
+          }</span></div>
+                    <div>Send Time: ${data.send_timestamp}</div>
+                    <div>Message: ${data.message}</div>
+                    ${
+                      data.ascii_values
+                        ? `<div>ASCII Values: ${data.ascii_values}</div>`
+                        : ""
+                    }
+                    ${
+                      data.encrypted_message
+                        ? `<div>Encrypted Message: ${data.encrypted_message}</div>`
+                        : ""
+                    }
+                    ${
+                      data.bin_message
+                        ? `<div>Binary Message: ${data.bin_message}</div>`
+                        : ""
+                    }
+                `;
           messagesDiv.appendChild(newMessage);
         });
 
@@ -48,9 +73,20 @@
     <div id="messages">
       {% for msg in messages %}
       <div>
-        {{ msg.type|capitalize }} Message: {{ msg.message }} <br />
-        Encrypted Message: {{ msg.encrypted_message }} <br />
-        <span style="color: gray">{{ msg.timestamp }}</span>
+        <div>
+          <span style="color: blue">{{ msg.sender }}</span> to
+          <span style="color: green">{{ msg.receiver }}</span> at
+          <span style="color: gray">{{ msg.recv_timestamp }}</span>
+        </div>
+        <div>Send Time: {{ msg.send_timestamp }}</div>
+        <div>{{ msg.type|capitalize }} Message: {{ msg.message }}</div>
+        {% if msg.ascii_values %}
+        <div>ASCII Values: {{ msg.ascii_values }}</div>
+        {% endif %} {% if msg.encrypted_message %}
+        <div>Encrypted Message: {{ msg.encrypted_message }}</div>
+        {% endif %} {% if msg.bin_message %}
+        <div>Binary Message: {{ msg.bin_message }}</div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
