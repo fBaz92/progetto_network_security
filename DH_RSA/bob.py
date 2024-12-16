@@ -1,6 +1,6 @@
 import socket
 from typing import Tuple
-from shared_protocol import DiffieHellman
+from shared_protocol import DiffieHellman, is_prime
 
 def decrypt(cipher: list, private_key: Tuple[int, int]) -> str:
     d, n = private_key
@@ -13,10 +13,10 @@ def generate_rsa_keys(p: int, q: int, e: int) -> Tuple[Tuple[int, int], Tuple[in
     return ((e, n), (d, n))
 
 def main():
-    # Inizializza DH
+    # Init DH
     dh = DiffieHellman()
     
-    # Avvia il server
+    # start the server
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('localhost', 5003))
     server.listen(1)
@@ -26,21 +26,21 @@ def main():
     print(f"Alice connected from {addr}")
     
     try:
-        # Ricevi la chiave pubblica di Alice
+        # receive public key from Alice
         alice_public_key = int(conn.recv(1024).decode())
         print(f"Received DH public key from Alice: {alice_public_key}")
         
-        # Invia la tua chiave pubblica
+        # send Bob's public key
         conn.send(str(dh.public_key).encode())
         
-        # Genera il segreto condiviso
+        # create shared secret
         shared_secret = dh.generate_shared_secret(alice_public_key)
         print(f"Generated shared secret: {shared_secret}")
         
-        # Usa il segreto condiviso per generare le chiavi RSA
+        # create RSA keys from the shared secred
         p = 61 * shared_secret % 1000
         q = 53 * shared_secret % 1000
-        # Assicurati che p e q siano primi (questa è una semplificazione)
+        # simplification to ensure both p and q are prime
         while not (is_prime(p) and is_prime(q)):
             p += 1
             q += 1
@@ -49,20 +49,20 @@ def main():
         _, private_key = generate_rsa_keys(p, q, e)
         print(f"RSA keys generated using shared secret")
         
-        # Ricevi il messaggio cifrato
+        # receive encrypted message
         data = conn.recv(1024).decode()
         encrypted = eval(data)
         print(f"\nCyphered message received: {encrypted}")
         
-        # Mostra la rappresentazione binaria
+        # binary representation
         binary = [bin(x)[2:] for x in encrypted]
         print(f"Binary representation: {binary}")
         
-        # Decifra
+        # decrypt
         decrypted = decrypt(encrypted, private_key)
         print(f"Cyphered message: {decrypted}")
         
-        # Mostra i valori ASCII
+        # ascii values
         ascii_values = [ord(c) for c in decrypted]
         print(f"ASCII values: {ascii_values}")
         
@@ -71,14 +71,6 @@ def main():
     finally:
         conn.close()
         server.close()
-
-def is_prime(n: int) -> bool:
-    if n < 2:
-        return False
-    for i in range(2, int(n ** 0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
 
 if __name__ == "__main__":
     main()

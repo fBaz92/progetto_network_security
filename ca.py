@@ -103,62 +103,6 @@ def run_ca_server():
     """Run the Certificate Authority server"""
     ca = CertificateAuthority()
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    try:
-        server.bind((NetworkConfig.HOST, NetworkConfig.CA_PORT))
-        server.listen(5)
-        print(f"CA Server listening on {NetworkConfig.HOST}:{NetworkConfig.CA_PORT}")
-
-        while True:
-            conn, addr = server.accept()
-            try:
-                print(f"\nNew connection from {addr}")
-                data = conn.recv(1024).decode()
-                request = json.loads(data)
-                print(f"Received request: {request['type']}")
-                
-                if request["type"] == "issue":
-                    cert = ca.issue_certificate(
-                        request["subject"],
-                        tuple(request["public_key"])
-                    )
-                    response = {
-                        "status": "success",
-                        "certificate": cert.to_dict()
-                    }
-                elif request["type"] == "verify":
-                    cert = Certificate.from_dict(request["certificate"])
-                    is_valid = ca.verify_certificate(cert)
-                    response = {
-                        "status": "success",
-                        "valid": is_valid
-                    }
-                else:
-                    response = {
-                        "status": "error",
-                        "message": "Unknown request type"
-                    }
-                
-                conn.send(json.dumps(response).encode())
-                
-            except Exception as e:
-                print(f"Error handling request: {e}")
-                error_response = {
-                    "status": "error",
-                    "message": str(e)
-                }
-                conn.send(json.dumps(error_response).encode())
-            finally:
-                conn.close()
-    except Exception as e:
-        print(f"CA Server error: {e}")
-    finally:
-        server.close()
-
-def run_ca_server():
-    """Run the Certificate Authority server"""
-    ca = CertificateAuthority()
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         server.bind((NetworkConfig.HOST, NetworkConfig.CA_PORT))
         server.listen(5)

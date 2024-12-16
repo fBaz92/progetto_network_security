@@ -1,7 +1,7 @@
 import socket
 import sys
 import argparse
-from shared_protocol import DiffieHellman
+from shared_protocol import DiffieHellman, is_prime
 from typing import Tuple
 
 def generate_rsa_keys(p: int, q: int, e: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
@@ -21,26 +21,26 @@ def main():
     args = parser.parse_args()
     
     try:
-        # Inizializza DH
+        # init DH
         dh = DiffieHellman()
         
-        # Connessione a Bob
+        # connect to Bob
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(('localhost', 5003))
         print("\nConnected to Bob. Starting key sharing...")
         
-        # Invia la chiave pubblica DH
+        # send DH public key to Bob
         sock.send(str(dh.public_key).encode())
         
-        # Ricevi la chiave pubblica di Bob
+        # receive Bob's public key
         bob_public_key = int(sock.recv(1024).decode())
         print(f"Public key received from Bob: {bob_public_key}")
         
-        # Genera il segreto condiviso
+        # generate the shared secret
         shared_secret = dh.generate_shared_secret(bob_public_key)
         print(f"Generated shared secred: {shared_secret}")
         
-        # Usa il segreto condiviso per generare le chiavi RSA
+        # use the shared secret to generate RSA keys
         p = 61 * shared_secret % 1000
         q = 53 * shared_secret % 1000
 
@@ -53,7 +53,7 @@ def main():
         public_key, _ = generate_rsa_keys(p, q, e)
         print(f"RSA keys generated using shared secret")
         
-        # Prepara e invia il messaggio
+        # prepare to send the message
         message = ' '.join(args.message)
         print(f"\nOriginal Message: {message}")
         
@@ -66,7 +66,7 @@ def main():
         binary = [bin(x)[2:] for x in encrypted]
         print(f"Binary representation: {binary}")
         
-        # Invia il messaggio cifrato
+        # send the encrypted message to Bob
         sock.send(str(encrypted).encode())
         print("Message successfuly sent!")
         
@@ -78,14 +78,6 @@ def main():
         sys.exit(1)
     finally:
         sock.close()
-
-def is_prime(n: int) -> bool:
-    if n < 2:
-        return False
-    for i in range(2, int(n ** 0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
 
 if __name__ == "__main__":
     main()

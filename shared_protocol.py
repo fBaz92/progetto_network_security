@@ -40,25 +40,25 @@ class DiffieHellman:
 
 def exchange_certificates(sock, my_name: str, my_dh_public: int):
     """Exchange and verify certificates with the other party"""
-    print(f"Starting certificate exchange for {my_name}")  # Debug log
+    print(f"Starting certificate exchange for {my_name}")  
     
     # Get your certificate from CA
     my_cert = get_certificate_from_ca(my_name, (my_dh_public, DiffieHellman.DEFAULT_P))
     if not my_cert:
         raise Exception("Failed to get certificate from CA")
-    print(f"Got certificate from CA: {my_cert.to_dict()}")  # Debug log
+    print(f"Got certificate from CA: {my_cert.to_dict()}")  
     
     # Send your certificate
     sock.send(json.dumps(my_cert.to_dict()).encode())
-    print("Sent my certificate")  # Debug log
+    print("Sent my certificate") 
     
     # Receive other's certificate
     other_cert_data = json.loads(sock.recv(1024).decode())
-    print(f"Received certificate: {other_cert_data}")  # Debug log
+    print(f"Received certificate: {other_cert_data}")  
     other_cert = Certificate.from_dict(other_cert_data)
     
     # Verify received certificate
-    print("Verifying received certificate...")  # Debug log
+    print("Verifying received certificate...")  
     if not verify_certificate_with_ca(other_cert):
         raise Exception("Invalid certificate received")
     
