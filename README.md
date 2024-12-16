@@ -94,6 +94,6 @@ This is a demonstration project and uses very small keys for simplicity. In a pr
 - To terminate the server (Bob), use Ctrl+C
 - Verify that port 5000 is available on your system
 
-## License
+## Author
 
-[Insert chosen license for the project]
+Francesco Bazzani
