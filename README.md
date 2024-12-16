@@ -1,57 +1,77 @@
-# Secure Message Exchange System with RSA and Diffie-Hellman
+# Secure Communication System with RSA, Diffie-Hellman, and Certificate Authority
 
 ## Overview
 
-This project implements a secure message exchange system between two parties (Alice and Bob) using RSA encryption with Diffie-Hellman key exchange. The communication happens over a network socket with the following features:
+This project implements a secure communication system between two parties (Alice and Bob) using:
 
-- Diffie-Hellman key exchange protocol for secure key sharing
 - RSA encryption for message security
-- Complete visualization of message transformation stages
+- Diffie-Hellman key exchange protocol
+- Certificate Authority (CA) for identity verification
+- Network sockets for communication
+
+## Features
+
+- Certificate-based authentication
+- Secure key exchange using Diffie-Hellman
+- Message encryption using RSA
 - Command-line interface for message input
-
-## Requirements
-
-- Python 3.8 or higher
-- No additional Python packages required (uses only standard library)
+- Complete message transformation visualization
 
 ## Project Structure
 
 ```
 .
+├── alice.py              # Client implementation (message sender)
+├── bob.py               # Server implementation (message receiver)
+├── ca.py                # Certificate Authority implementation
+├── certificates.py      # Certificate class and utilities
+├── config.py           # Network configuration
+├── launch_ca.py        # CA server launcher
 ├── shared_protocol.py  # Shared cryptographic protocols
-├── alice.py           # Client implementation (message sender)
-├── bob.py            # Server implementation (message receiver)
-└── README.md
+└── README.md           # This file
 ```
+
+## Requirements
+
+- Python 3.8+
+- No additional Python packages required (uses standard library only)
 
 ## How It Works
 
-### Key Exchange Process
+### Certificate Authority (CA)
 
-1. Bob starts a server waiting for connections
-2. Alice initiates connection with Bob
-3. Both parties generate Diffie-Hellman key pairs
-4. They exchange public keys and generate a shared secret
-5. The shared secret is used to derive RSA parameters
+- Issues digital certificates to verify identities
+- Signs certificates using RSA
+- Verifies certificates during communication
+- Runs on port 4999
 
-### Message Exchange
+### Communication Flow
 
-1. Alice encrypts her message using RSA
-2. The encrypted message is sent to Bob
-3. Bob decrypts the message using his private key
-4. Both parties see the message transformation at each step
+1. CA server starts and waits for certificate requests
+2. Bob starts and listens for incoming connections
+3. Alice initiates connection to Bob
+4. Both parties obtain certificates from CA
+5. Certificate exchange and validation occurs
+6. Diffie-Hellman key exchange is performed
+7. Shared secret is used to generate RSA parameters
+8. Message is encrypted and sent from Alice to Bob
+9. Bob decrypts and displays the message
 
 ## Usage
 
-### Starting Bob (Receiver)
+### 1. Start the Certificate Authority
+
+```bash
+python launch_ca.py
+```
+
+### 2. Start Bob (Receiver)
 
 ```bash
 python bob.py
 ```
 
-Bob will wait for incoming connections.
-
-### Sending Messages with Alice
+### 3. Send Messages with Alice
 
 Send default "Hello world" message:
 
@@ -62,51 +82,65 @@ python alice.py
 Send custom message:
 
 ```bash
-python alice.py -m your message here
+python alice.py -m Your message here
 ```
 
-Get help on available options:
+View help:
 
 ```bash
 python alice.py --help
 ```
 
-## Message Transformation Stages
+## Security Notes
 
-The system shows:
+This is an educational implementation to demonstrate cryptographic concepts. For production use, you would need:
 
-1. Original message
-2. ASCII representation
-3. Encrypted form
-4. Binary representation
-5. Decrypted message (on Bob's side)
+### RSA Implementation
 
-## Implementation Details
+- Larger prime numbers (1024+ bits)
+- Secure prime number generation
+- Proper padding (PKCS#1 v2.0 / OAEP)
+- Message segmentation for long texts
 
-- Uses Diffie-Hellman for secure key exchange
-- RSA encryption with dynamically generated parameters
-- Communication via local TCP sockets (localhost:5003)
-- Shows message transformation at each step
-- Command-line interface for flexible message input
+### Diffie-Hellman
 
-## Security Note
+- Larger parameters
+- Proper parameter validation
+- Ephemeral key exchange
 
-This is an educational implementation designed to demonstrate cryptographic concepts. For production use, you would need:
+### Certificate Authority
 
-- Larger prime numbers
-- More secure parameter generation
-- Additional security measures like:
-  - Certificate validation
-  - Message integrity checks
-  - Proper key management
-  - Protection against known attacks
+- Robust certificate management
+- Proper certificate revocation
+- Secure storage of CA keys
+- Strong signature algorithms
 
-## Troubleshooting
+## Ports Used
 
-- Ensure Bob is running before starting Alice
-- If port 5003 is in use, you may need to modify the port number in both files
-- Check that all three python files are in the same directory
+- CA Server: 4999
+- Bob's Server: 5003
+- Alice connects to Bob's port
+
+## Error Handling
+
+- Certificate validation failures
+- Connection errors
+- Invalid message formats
+- Encryption/decryption errors
+
+## Future Improvements
+
+- Implement proper RSA padding
+- Add certificate revocation
+- Improve key generation security
+- Add message integrity checks
+- Implement session management
+- Add proper error recovery
 
 ## Author
 
 Francesco Bazzani
+
+## License
+
+This project is for educational purposes only.

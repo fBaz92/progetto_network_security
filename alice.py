@@ -1,17 +1,33 @@
 import socket
 import sys
 import argparse
-from shared_protocol import DiffieHellman
+from shared_protocol import *
 from typing import Tuple
 
-def generate_rsa_keys(p: int, q: int, e: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
-    n = p * q
-    phi = (p - 1) * (q - 1)
-    d = pow(e, -1, phi)
-    return ((e, n), (d, n))
+def is_prime(n: int) -> bool:
+    """Check if a number is prime"""
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
 
-def encrypt(message: str, public_key: Tuple[int, int]) -> list:
-    e, n = public_key
+def encrypt(message: str, shared_secret: int) -> list:
+    """Encrypt a message using the shared secret"""
+    # Use shared_secret to generate RSA parameters
+    p = 61 * shared_secret % 1000
+    q = 53 * shared_secret % 1000
+    # Ensure p and q are prime
+    while not is_prime(p):
+        p += 1
+    while not is_prime(q):
+        q += 1
+    
+    n = p * q
+    e = 17  # Public key exponent
+    
+    # Encrypt the message
     return [pow(ord(char), e, n) for char in message]
 
 def main():
@@ -21,70 +37,49 @@ def main():
     args = parser.parse_args()
     
     try:
-        # Inizializza DH
+        # Initialize DH
         dh = DiffieHellman()
         
-        # Connessione a Bob
+        # Connect to Bob
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(('localhost', 5003))
-        print("\nConnesso a Bob. Iniziando lo scambio delle chiavi...")
+        sock.connect((NetworkConfig.HOST, NetworkConfig.BOB_PORT))
+        print(f"Connected to Bob on port {NetworkConfig.BOB_PORT}")
+
+        # Exchange certificates
+        other_cert = exchange_certificates(sock, "Alice", dh.public_key)
+        if other_cert.subject != "Bob":
+            raise Exception("Received certificate from unexpected subject")
         
-        # Invia la chiave pubblica DH
+        # Send DH public key
         sock.send(str(dh.public_key).encode())
         
-        # Ricevi la chiave pubblica di Bob
+        # Receive Bob's public key
         bob_public_key = int(sock.recv(1024).decode())
-        print(f"Ricevuta chiave pubblica DH da Bob: {bob_public_key}")
+        print(f"Received DH public key from Bob: {bob_public_key}")
         
-        # Genera il segreto condiviso
+        # Generate shared secret
         shared_secret = dh.generate_shared_secret(bob_public_key)
-        print(f"Segreto condiviso generato: {shared_secret}")
+        print(f"Generated shared secret: {shared_secret}")
         
-        # Usa il segreto condiviso per generare le chiavi RSA
-        p = 61 * shared_secret % 1000
-        q = 53 * shared_secret % 1000
-        # Assicurati che p e q siano primi (questa è una semplificazione)
-        while not (is_prime(p) and is_prime(q)):
-            p += 1
-            q += 1
-        e = 17
-        
-        public_key, _ = generate_rsa_keys(p, q, e)
-        print(f"RSA keys generated using the shared secret")
-        
-        # Prepara e invia il messaggio
+        # Prepare and send message
         message = ' '.join(args.message)
         print(f"\nOriginal message: {message}")
         
-        ascii_values = [ord(c) for c in message]
-        print(f"ASCII values: {ascii_values}")
+        encrypted = encrypt(message, shared_secret)
+        print(f"Encrypted message: {encrypted}")
         
-        encrypted = encrypt(message, public_key)
-        print(f"Cyphered message: {encrypted}")
-        
-        binary = [bin(x)[2:] for x in encrypted]
-        print(f"Binary representation: {binary}")
-        
-        # Invia il messaggio cifrato
+        # Send encrypted message
         sock.send(str(encrypted).encode())
-        print("Message successfuly sent!")
+        print("Message sent successfully!")
         
     except ConnectionRefusedError:
-        print("Error: Impossible to connect to Bob. Is Bob running?")
+        print("Error: Could not connect to Bob. Is Bob running?")
         sys.exit(1)
     except Exception as e:
-        print(f"An error occured: {e}")
+        print(f"An error occurred: {e}")
         sys.exit(1)
     finally:
         sock.close()
-
-def is_prime(n: int) -> bool:
-    if n < 2:
-        return False
-    for i in range(2, int(n ** 0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
 
 if __name__ == "__main__":
     main()
