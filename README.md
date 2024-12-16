@@ -1,21 +1,27 @@
-# Secure Communication System with RSA, Diffie-Hellman, and Certificate Authority
+# Secure Communication System with RSA and Diffie-Hellman
 
 ## Overview
 
-This project implements a secure communication system between two parties (Alice and Bob) using:
+This project implements a secure communication system between two parties (Alice and Bob) with different implementation variants:
 
-- RSA encryption for message security
-- Diffie-Hellman key exchange protocol
-- Certificate Authority (CA) for identity verification
-- Network sockets for communication
+1. **Complete Version**: Full implementation with:
 
-## Features
+   - RSA encryption for message security
+   - Diffie-Hellman key exchange protocol
+   - Certificate Authority (CA) for identity verification
+   - Network sockets for communication
 
-- Certificate-based authentication
-- Secure key exchange using Diffie-Hellman
-- Message encryption using RSA
-- Command-line interface for message input
-- Complete message transformation visualization
+2. **Simple RSA Version** (`simple_RSA/`):
+
+   - Basic implementation focusing only on RSA encryption
+   - Direct message exchange without CA or DH
+   - Simplified socket communication
+
+3. **DH-RSA Version** (`DH_RSA/`):
+   - Combined implementation using Diffie-Hellman for key exchange
+   - RSA for message encryption
+   - No Certificate Authority
+   - Intermediate complexity level
 
 ## Project Structure
 
@@ -28,7 +34,17 @@ This project implements a secure communication system between two parties (Alice
 ├── config.py           # Network configuration
 ├── launch_ca.py        # CA server launcher
 ├── shared_protocol.py  # Shared cryptographic protocols
-└── README.md           # This file
+│
+├── simple_RSA/         # Simple RSA implementation
+│   ├── alice.py       # Simple RSA client
+│   ├── bob.py         # Simple RSA server
+│
+├── DH_RSA/            # Diffie-Hellman with RSA implementation
+│   ├── alice.py       # DH-RSA client
+│   ├── bob.py        # DH-RSA server
+│   └── shared_protocol.py         # DH implementation
+│
+└── README.md          # This file
 ```
 
 ## Requirements
@@ -36,79 +52,102 @@ This project implements a secure communication system between two parties (Alice
 - Python 3.8+
 - No additional Python packages required (uses standard library only)
 
-## How It Works
+## Implementation Variants
 
-### Certificate Authority (CA)
+### 1. Complete Version
 
-- Issues digital certificates to verify identities
-- Signs certificates using RSA
-- Verifies certificates during communication
-- Runs on port 4999
+- Full security implementation with CA, DH, and RSA
+- Suitable for understanding complete secure communication flow
+- Includes certificate management and validation
+- Most complex but most secure variant
 
-### Communication Flow
+### 2. Simple RSA Version
 
-1. CA server starts and waits for certificate requests
-2. Bob starts and listens for incoming connections
-3. Alice initiates connection to Bob
-4. Both parties obtain certificates from CA
-5. Certificate exchange and validation occurs
-6. Diffie-Hellman key exchange is performed
-7. Shared secret is used to generate RSA parameters
-8. Message is encrypted and sent from Alice to Bob
-9. Bob decrypts and displays the message
+- Basic RSA encryption/decryption
+- Direct socket communication
+- No key exchange protocol or certificates
+- Perfect for learning basic cryptographic concepts
+
+### 3. DH-RSA Version
+
+- Combines Diffie-Hellman key exchange with RSA
+- More secure than simple RSA but simpler than full version
+- Good middle ground for learning both protocols
 
 ## Usage
 
-### 1. Start the Certificate Authority
+### Complete Version
+
+1. Start the Certificate Authority:
 
 ```bash
 python launch_ca.py
 ```
 
-### 2. Start Bob (Receiver)
+2. Start Bob (Receiver):
 
 ```bash
 python bob.py
 ```
 
-### 3. Send Messages with Alice
-
-Send default "Hello world" message:
+3. Send Messages with Alice:
 
 ```bash
 python alice.py
-```
-
-Send custom message:
-
-```bash
+# or with custom message:
 python alice.py -m Your message here
 ```
 
-View help:
+### Simple RSA Version
+
+1. Start Bob:
 
 ```bash
-python alice.py --help
+cd simple_RSA
+python bob.py
+```
+
+2. Send message with Alice:
+
+```bash
+cd simple_RSA
+python alice.py
+```
+
+### DH-RSA Version
+
+1. Start Bob:
+
+```bash
+cd DH_RSA
+python bob.py
+```
+
+2. Send message with Alice:
+
+```bash
+cd DH_RSA
+python alice.py
 ```
 
 ## Security Notes
 
 This is an educational implementation to demonstrate cryptographic concepts. For production use, you would need:
 
-### RSA Implementation
+### RSA Implementation (all versions)
 
 - Larger prime numbers (1024+ bits)
 - Secure prime number generation
 - Proper padding (PKCS#1 v2.0 / OAEP)
 - Message segmentation for long texts
 
-### Diffie-Hellman
+### Diffie-Hellman (Complete and DH-RSA versions)
 
 - Larger parameters
 - Proper parameter validation
 - Ephemeral key exchange
 
-### Certificate Authority
+### Certificate Authority (Complete version only)
 
 - Robust certificate management
 - Proper certificate revocation
@@ -117,30 +156,17 @@ This is an educational implementation to demonstrate cryptographic concepts. For
 
 ## Ports Used
 
-- CA Server: 4999
-- Bob's Server: 5003
+- CA Server (Complete version): 4999
+- Bob's Server: 5003 (all versions)
 - Alice connects to Bob's port
 
 ## Error Handling
 
-- Certificate validation failures
+- Certificate validation failures (Complete version)
 - Connection errors
 - Invalid message formats
 - Encryption/decryption errors
 
-## Future Improvements
-
-- Implement proper RSA padding
-- Add certificate revocation
-- Improve key generation security
-- Add message integrity checks
-- Implement session management
-- Add proper error recovery
-
 ## Author
 
 Francesco Bazzani
-
-## License
-
-This project is for educational purposes only.
