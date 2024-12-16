@@ -1,172 +1,99 @@
-# Secure Communication System with RSA and Diffie-Hellman
+# RSA Encryption Demo Project
 
-## Overview
+This project demonstrates RSA encryption algorithm through a client-server communication between two entities: Alice (sender) and Bob (receiver).
 
-This project implements a secure communication system between two parties (Alice and Bob) with different implementation variants:
+## Description
 
-1. **Complete Version**: Full implementation with:
+The project implements a secure communication system where:
 
-   - RSA encryption for message security
-   - Diffie-Hellman key exchange protocol
-   - Certificate Authority (CA) for identity verification
-   - Network sockets for communication
+- **Alice** (client) encrypts and sends messages using Bob's public key
+- **Bob** (server) receives and decrypts messages using his private key
 
-2. **Simple RSA Version** (`simple_RSA/`):
+The system displays every step of the encryption process, including ASCII and binary message representations, making it ideal for educational and demonstration purposes.
 
-   - Basic implementation focusing only on RSA encryption
-   - Direct message exchange without CA or DH
-   - Simplified socket communication
+## Prerequisites
 
-3. **DH-RSA Version** (`DH_RSA/`):
-   - Combined implementation using Diffie-Hellman for key exchange
-   - RSA for message encryption
-   - No Certificate Authority
-   - Intermediate complexity level
+- Python 3.6 or higher
+- Socket library (included in Python standard library)
+- argparse library (included in Python standard library)
 
 ## Project Structure
 
 ```
 .
-├── alice.py              # Client implementation (message sender)
-├── bob.py               # Server implementation (message receiver)
-├── ca.py                # Certificate Authority implementation
-├── certificates.py      # Certificate class and utilities
-├── config.py           # Network configuration
-├── launch_ca.py        # CA server launcher
-├── shared_protocol.py  # Shared cryptographic protocols
-│
-├── simple_RSA/         # Simple RSA implementation
-│   ├── alice.py       # Simple RSA client
-│   ├── bob.py         # Simple RSA server
-│
-├── DH_RSA/            # Diffie-Hellman with RSA implementation
-│   ├── alice.py       # DH-RSA client
-│   ├── bob.py        # DH-RSA server
-│   └── shared_protocol.py         # DH implementation
-│
-└── README.md          # This file
+├── README.md
+├── alice.py    # Client for sending encrypted messages
+└── bob.py      # Server for receiving and decrypting
 ```
 
-## Requirements
+## Installation
 
-- Python 3.8+
-- No additional Python packages required (uses standard library only)
+1. Clone the repository:
 
-## Implementation Variants
+```bash
+git clone <repository-url>
+cd rsa-encryption-demo
+```
 
-### 1. Complete Version
-
-- Full security implementation with CA, DH, and RSA
-- Suitable for understanding complete secure communication flow
-- Includes certificate management and validation
-- Most complex but most secure variant
-
-### 2. Simple RSA Version
-
-- Basic RSA encryption/decryption
-- Direct socket communication
-- No key exchange protocol or certificates
-- Perfect for learning basic cryptographic concepts
-
-### 3. DH-RSA Version
-
-- Combines Diffie-Hellman key exchange with RSA
-- More secure than simple RSA but simpler than full version
-- Good middle ground for learning both protocols
+2. No additional dependencies needed as the project uses only Python standard libraries.
 
 ## Usage
 
-### Complete Version
-
-1. Start the Certificate Authority:
-
-```bash
-python launch_ca.py
-```
-
-2. Start Bob (Receiver):
+1. First, start Bob (the server):
 
 ```bash
 python bob.py
 ```
 
-3. Send Messages with Alice:
+2. In a new terminal, run Alice (the client) to send a message:
 
 ```bash
-python alice.py
-# or with custom message:
-python alice.py -m Your message here
+python alice.py -m Hello world
 ```
 
-### Simple RSA Version
+### Alice Options
 
-1. Start Bob:
+- `--message` or `-m`: Specify the message to send (default: "Hello world")
+  - You can send multiple words: `python alice.py -m This is a longer message`
 
-```bash
-cd simple_RSA
-python bob.py
+## Technical Details
+
+### RSA Parameters
+
+- Prime numbers used: p = 61, q = 53
+- Public exponent: e = 17
+- The modulus n and private exponent d are calculated automatically
+
+### Encryption Process
+
+1. Text to ASCII conversion
+2. RSA encryption of each character
+3. Binary representation conversion for visualization
+4. Encrypted message transmission
+
+### Sample Output
+
 ```
-
-2. Send message with Alice:
-
-```bash
-cd simple_RSA
-python alice.py
-```
-
-### DH-RSA Version
-
-1. Start Bob:
-
-```bash
-cd DH_RSA
-python bob.py
-```
-
-2. Send message with Alice:
-
-```bash
-cd DH_RSA
-python alice.py
+Original message: Hello world
+ASCII values: [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]
+Encrypted message: [2012, 2981, 2645, 2645, 2981, 2012, 1209, 2981, 2645, 2645, 2981]
+Binary representation: ['11111100100', '101110100101', ...]
 ```
 
 ## Security Notes
 
-This is an educational implementation to demonstrate cryptographic concepts. For production use, you would need:
+This is a demonstration project and uses very small keys for simplicity. In a production environment:
 
-### RSA Implementation (all versions)
+- Use keys of at least 2048 bits
+- Implement proper padding
+- Use certified cryptographic libraries like `pycryptodome`
 
-- Larger prime numbers (1024+ bits)
-- Secure prime number generation
-- Proper padding (PKCS#1 v2.0 / OAEP)
-- Message segmentation for long texts
+## Troubleshooting
 
-### Diffie-Hellman (Complete and DH-RSA versions)
+- If you receive "Connection Refused", ensure bob.py is running before alice.py
+- To terminate the server (Bob), use Ctrl+C
+- Verify that port 5000 is available on your system
 
-- Larger parameters
-- Proper parameter validation
-- Ephemeral key exchange
+## License
 
-### Certificate Authority (Complete version only)
-
-- Robust certificate management
-- Proper certificate revocation
-- Secure storage of CA keys
-- Strong signature algorithms
-
-## Ports Used
-
-- CA Server (Complete version): 4999
-- Bob's Server: 5003 (all versions)
-- Alice connects to Bob's port
-
-## Error Handling
-
-- Certificate validation failures (Complete version)
-- Connection errors
-- Invalid message formats
-- Encryption/decryption errors
-
-## Author
-
-Francesco Bazzani
+[Insert chosen license for the project]
